@@ -1,0 +1,45 @@
+spring:
+  security:
+    user:
+      name: admin
+      password: 123
+
+  output:
+    ansi:
+      enabled: ALWAYS
+server:
+  port: 8090
+
+flink:
+  pipeline-name: flinkCDCTest
+  mysqlDataSource:
+    - port: 3307
+      hostname: 127.0.0.1
+      databaseList:
+        - mydb
+      tableList:
+        - mydb.orders
+      username: root
+      password: 123456
+
+databricks:
+  driverClassName: com.mysql.jdbc.Driver
+  url: jdbc:mysql://newforesee.top:3306/spark_dmp?useUnicode=true&characterEncoding=utf8
+  #如果存在
+  if_exists: append
+  #<!-- 初始化连接 -->
+  initialSize: 5
+
+  #最大连接数量
+  maxActive: 10
+
+  #<!-- 最大空闲连接 -->
+  maxIdle: 8
+
+  #<!-- 最小空闲连接 -->
+  minIdle: 5
+
+  #<!-- 超时等待时间以毫秒为单位 6000毫秒/1000等于60秒 -->
+  maxWait: 300000
+  #指定由连接池所创建的连接的自动提交（auto-commit）状态。
+  defaultAutoCommit: true
