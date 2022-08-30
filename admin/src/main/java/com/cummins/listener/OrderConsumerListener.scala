@@ -3,13 +3,13 @@ package com.cummins.listener
 
 import com.cummins.cdc.flink.sink.FlinkConsumerListener
 import com.cummins.model.Order
+import com.cummins.utils.ConnectPool
 import lombok.extern.slf4j.Slf4j
 import org.springframework.stereotype.Component
 
+import java.sql.{Connection, PreparedStatement}
 import java.util
-import java.sql.{Connection, DriverManager, PreparedStatement, SQLException}
 import scala.collection.JavaConverters._
-import scala.tools.jline_embedded.internal.Log.warn
 
 /**
  * Created by newforesee on 2022/8/23
@@ -19,17 +19,12 @@ import scala.tools.jline_embedded.internal.Log.warn
 class OrderConsumerListener extends FlinkConsumerListener[Order] {
 
 
-  val yourToken = ""
-  val url = s"jdbc:databricks://adb-1618527118165113.1.databricks.azure.cn:443/default;TransportMode=http;SSL=1;httpPath=sql/protocolv1/o/1618527118165113/0622-055845-qbw7d3ae;AuthMech=3;UID=token;PWD=${yourToken}"
-  Class.forName("com.databricks.client.jdbc.jdbc42.JDBC42AbstractDriver")
-  lazy val conn: Connection = DriverManager.getConnection(url)
-
-
   override def getDBName: String = "mydb"
 
   override def getTable: String = "orders"
 
   override def insert(data: Order): Unit = {
+    val conn: Connection = ConnectPool.getConnection
     conn.createStatement().execute(
       s"""
          |INSERT INTO `default`.`orders` (
@@ -51,12 +46,16 @@ class OrderConsumerListener extends FlinkConsumerListener[Order] {
          |	)
          |""".stripMargin
     )
+
     println(s"Insert: $data")
+    ConnectPool.returnConnection(conn)
 
 
   }
 
   override def update(srcData: Order, destData: Order): Unit = {
+
+    val conn: Connection = ConnectPool.getConnection
 
     conn.createStatement().execute(
       s"""
@@ -72,19 +71,23 @@ class OrderConsumerListener extends FlinkConsumerListener[Order] {
          |""".stripMargin
     )
 
+    ConnectPool.returnConnection(conn)
     println(s"update: \n src: $srcData \n dest: $destData")
   }
 
-  override def delete(data: Order): Unit = {
 
+  override def delete(data: Order): Unit = {
+    val conn: Connection = ConnectPool.getConnection
 
     conn.createStatement().execute(s"DELETE FROM `default`.`orders` WHERE `order_id` = ${data.getOrder_id}")
 
+    ConnectPool.returnConnection(conn)
 
     println(s"delete: $data")
   }
 
   override def batch_insert(data: util.List[Order]): Unit = {
+    val conn: Connection = ConnectPool.getConnection
 
     val ps: PreparedStatement = conn.prepareStatement(
       s"""
@@ -115,6 +118,8 @@ class OrderConsumerListener extends FlinkConsumerListener[Order] {
 
 
     println(s"batch_insert : ${data.size()}")
+    ConnectPool.returnConnection(conn)
 
   }
+
 }

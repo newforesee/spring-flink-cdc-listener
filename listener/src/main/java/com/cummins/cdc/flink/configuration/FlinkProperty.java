@@ -1,14 +1,23 @@
 package com.cummins.cdc.flink.configuration;
 
 import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 import java.util.List;
 
 
 @Data
+//@ConfigurationProperties(prefix = "flink")
 public class FlinkProperty {
 
     private String pipelineName = "flinkCDC";
+
+    private long batchProcessingDataCount;
+
+    private int parallelism = 5;
+
+    private long batchSize = 1000;
+
 
     /**
      * mysql数据源

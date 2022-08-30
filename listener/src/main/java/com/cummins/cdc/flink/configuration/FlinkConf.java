@@ -24,8 +24,8 @@ public class FlinkConf {
 
     @Bean
     @ConditionalOnMissingBean
-    public SinkFunction sinkFunction(List<FlinkConsumerListener> flinkConsumerListenerList) {
-        return new CustomSinkFunction(flinkConsumerListenerList,4725);
+    public SinkFunction sinkFunction(List<FlinkConsumerListener> flinkConsumerListenerList,FlinkProperty flinkProperty) {
+        return new CustomSinkFunction(flinkConsumerListenerList,flinkProperty);
     }
 
     @Bean

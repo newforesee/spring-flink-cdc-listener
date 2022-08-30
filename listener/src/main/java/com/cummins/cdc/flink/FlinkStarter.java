@@ -7,6 +7,7 @@ import com.cummins.cdc.flink.util.JsonDebeziumDeserializationSchema;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.common.time.Time;
+import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
@@ -53,9 +54,11 @@ public class FlinkStarter {
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(bsEnv, bsSettings);
 
         //todo:从配置文件获取并行度
-        bsEnv.setParallelism(4);
+        bsEnv.setParallelism(flinkProperty.getParallelism());
 
-//        bsEnv.enableCheckpointing(5000L);
+        bsEnv.enableCheckpointing(5000L, CheckpointingMode.EXACTLY_ONCE);
+        bsEnv.getCheckpointConfig().setPreferCheckpointForRecovery(true);
+
 
         //设置job名称
         tEnv.getConfig().getConfiguration().setString("pipeline.name", flinkProperty.getPipelineName());
